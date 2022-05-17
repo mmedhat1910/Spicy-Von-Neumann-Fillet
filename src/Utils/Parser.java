@@ -18,7 +18,7 @@ public class Parser {
             instructionValue = 0b011100000000000000000000000000000;;
             return instructionValue | Integer.parseInt(instruction[1]);
         }
-        boolean addR3 = false;
+
         instructionValue = switch (instruction[0]) {
             // R types
             case "SUB" -> 0b0001;

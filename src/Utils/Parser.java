@@ -78,6 +78,8 @@ public class Parser {
         for (String inst : p.getCodeText()){
             System.out.println( Integer.toBinaryString(p.parse(inst)));
         }
+        //TODO test all instructions parsing
+
 
     }
 }

@@ -9,7 +9,6 @@ public class Decoder {
     int imm = 0;     // bits 17:0
     int address = 0; // bits 27:0
 
-
     public  void decode(int instruction) {
         // Complete the decode() body...
         opcode = (instruction >> 28);

@@ -7,7 +7,22 @@ public class ALU {
     private int result;
     private boolean zero;
 
-    public void run(int control){
+
+    public int getResult () {
+        return result;
+    }
+    public boolean getZero () {
+        return zero;
+    }
+
+    public void setOp1(int op1){
+        this.op1 = op1;
+    }
+    public void setOp2(int op2){
+        this.op2 = op2;
+    }
+    public void setControl(int control){
+        this.control = control;
         switch (control) {
             case 0 -> result = op1 + op2;
             case 1 -> result = op1 - op2;
@@ -19,11 +34,6 @@ public class ALU {
         }
         zero = result == 0;
     }
-    public int getResult () {
-        return result;
-    }
-    public boolean getZero () {
-        return zero;
-    }
+}
 
 }

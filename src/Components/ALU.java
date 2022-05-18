@@ -34,6 +34,5 @@ public class ALU {
         }
         zero = result == 0;
     }
-}
 
 }

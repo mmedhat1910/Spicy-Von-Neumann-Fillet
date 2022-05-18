@@ -3,15 +3,16 @@ package Utils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Parser {
     final ArrayList<String> codeText;
 
-    public Parser() throws IOException {
-        this.codeText = loadCodeText("code.txt");
+    public Parser(String file) throws IOException {
+        this.codeText = loadCodeText(file);
     }
-    public int parse(String codeline){
+    public int parseInstruction(String codeline){
         String[] instruction = codeline.split(" ");
         int instructionValue = 0;
         if(instruction[0].equals("J")){
@@ -55,6 +56,14 @@ public class Parser {
         return instructionValue | Integer.parseInt(instruction[3]);
 
         }
+
+        public ArrayList<Integer> getInstructions(){
+            ArrayList<Integer> instructions = new ArrayList<>();
+            for (String inst : codeText){
+                instructions.add(parseInstruction(inst));
+            }
+            return instructions;
+        }
     public ArrayList<String> loadCodeText(String filename) throws IOException {
         ArrayList<String> code = new ArrayList<>();
         BufferedReader br = new BufferedReader(new FileReader(filename));
@@ -67,16 +76,17 @@ public class Parser {
         return code;
     }
 
+
     public ArrayList<String> getCodeText() {
         return codeText;
     }
 
     public static void main(String[] args) throws IOException {
-        Parser p = new Parser();
+        Parser p = new Parser("code.txt");
         System.out.println(p.getCodeText());
-        p.parse(p.getCodeText().get(0));
+        p.parseInstruction(p.getCodeText().get(0));
         for (String inst : p.getCodeText()){
-            System.out.println( Integer.toBinaryString(p.parse(inst)));
+            System.out.println( Integer.toBinaryString(p.parseInstruction(inst)));
         }
         //TODO test all instructions parsing
 

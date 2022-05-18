@@ -28,12 +28,8 @@ public class MainMemory{
 
     public void writeData(int address,int inputValue){
 
-            if (MemWrite && address>1023) {
                 this.memory[address] = inputValue;
-                System.out.println("Input Value added to the memory Successfully");
-            }
-            else
-                System.out.println("Wrong address assigned");
+
 
     }
 }

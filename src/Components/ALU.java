@@ -8,34 +8,22 @@ public class ALU {
     private boolean zero;
 
     public void run(int control){
-//        switch (control) {
-//            case 0 : ADD(); break;
-//            case 1 : SUB(); break;
-//            case 2 : MULI(); break;
-//            case 3 : ADDI(); break;
-//            case 4 : BNE(); break;
-//            case 5 : ANDI(); break;
-//            case 6 : ORI(); break;
-//            case 7 : Jump(); break;
-//            case 8 : SLL(); break;
-//            case 9 : SRL(); break;
-//            case 10: LW(); break;
-//            case 11: SW(); break;
-//        }
+        switch (control) {
+            case 0 -> result = op1 + op2;
+            case 1 -> result = op1 - op2;
+            case 2 -> result = op1 * op2;
+            case 3 -> result = op1 & op2;
+            case 4 -> result = op1 | op2;
+            case 5 -> result = op1 << op2;
+            case 6 -> result = op1 >> op2;
+        }
         zero = result == 0;
     }
-
-
-
-//    private void SUB() {
-//        result = op1 - op2;
-//    }
-//
-//    private void ADD() {
-//        result = op1 + op2;
-//    }
-//    private void MULI(){
-//        result = op1 * op2;
-//    }
+    public int getResult () {
+        return result;
+    }
+    public boolean getZero () {
+        return zero;
+    }
 
 }

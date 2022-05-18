@@ -10,11 +10,11 @@ public class RegisterFile {
     }
 
     public int getData1(int address){
-        return registers[address];
+        return address == 0 ? 0 :  registers[address];
     }
 
     public int getData2(int address){
-        return registers[address];
+        return address == 0 ? 0 :  registers[address];
     }
 
     public void writeData(int address , int data) {

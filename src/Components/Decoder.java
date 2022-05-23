@@ -18,6 +18,7 @@ public class Decoder {
         shamt =  0b00000000000000000001111111111111;
         imm = instruction & 0b00000000000000111111111111111111;
         address = instruction & 0b00001111111111111111111111111111;
+
     }
 
     public int getOpcode() {

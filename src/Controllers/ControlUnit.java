@@ -38,4 +38,36 @@ public class ControlUnit {
             ALUOp = 0b000;
         }
     }
+
+    public boolean isRegDst() {
+        return RegDst;
+    }
+
+    public boolean isBranch() {
+        return Branch;
+    }
+
+    public boolean isMemRead() {
+        return MemRead;
+    }
+
+    public boolean isMemWrite() {
+        return MemWrite;
+    }
+
+    public boolean isMemtoReg() {
+        return MemtoReg;
+    }
+
+    public boolean isALUSrc() {
+        return ALUSrc;
+    }
+
+    public boolean isRegWrite() {
+        return RegWrite;
+    }
+
+    public int getALUOp() {
+        return ALUOp;
+    }
 }

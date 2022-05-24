@@ -34,6 +34,8 @@ public class RegisterFile {
 
 
 
+
+
     public void setReadReg1(int readReg1) {
         this.readReg1 = readReg1;
     }

@@ -9,6 +9,9 @@ public class Decoder {
     int imm = 0;     // bits 17:0
     int address = 0; // bits 27:0
 
+
+
+
     public  void decode(int instruction) {
         // Complete the decode() body...
         opcode = (instruction >> 28);
@@ -20,6 +23,13 @@ public class Decoder {
         address = instruction & 0b00001111111111111111111111111111;
 
     }
+
+    public boolean isImmediate(int instruction){
+        int op = instruction >> 28;
+        return op == 2 || op==3 || op==4 || op==5 || op==6 || op==7 || op==10 || op==11;
+    }
+    public boolean isAddress(int instruction) {return (instruction >> 28) == 7;};
+
 
     public int getOpcode() {
         return opcode;

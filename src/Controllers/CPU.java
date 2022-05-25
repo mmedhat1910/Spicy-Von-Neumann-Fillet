@@ -55,7 +55,7 @@ public class CPU {
         for (int index = 0; index < instructions.size();index++) {
             Object instruction = instructions.get(index);
             memory.setWriteAddress(index);
-            memory.writeData(instruction);
+//            memory.writeData(instruction);
             instructionCount++;
         }
 //        int cycle = 1;

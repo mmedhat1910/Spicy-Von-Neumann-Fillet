@@ -26,7 +26,7 @@ public class Decoder {
 
     public boolean isImmediate(int instruction){
         int op = instruction >> 28;
-        return op == 2 || op==3 || op==4 || op==5 || op==6 || op==7 || op==10 || op==11;
+        return op == 2 || op==3 || op==4 || op==5 || op==6 || op==7 || op==-6 || op==-5; //1010 -> 0101 +1 = 0110 -- 1011 -> 0100 +1 = 0101
     }
     public boolean isAddress(int instruction) {return (instruction >> 28) == 7;};
 

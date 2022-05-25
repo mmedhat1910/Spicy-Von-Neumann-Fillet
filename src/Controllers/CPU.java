@@ -5,9 +5,11 @@ import Components.Decoder;
 import Components.MainMemory;
 import Components.RegisterFile;
 import Utils.Parser;
+import Utils.StageBuffer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -22,17 +24,12 @@ public class CPU {
     int instructionCount = 0;
     int sp;
 
-    Queue<Integer> fetchQueue = new LinkedList<Integer>();
-    Queue<Integer> decodeQueue = new LinkedList<Integer>();
-    Queue<Integer> executeQueue = new LinkedList<Integer>();
-    Queue<Integer> memoryQueue = new LinkedList<Integer>();
-    Queue<Integer> wbQueue = new LinkedList<Integer>();
+    StageBuffer<Object> fetchDecode1 = new StageBuffer<>();
+    StageBuffer<HashMap<String, Integer>> decode1Decode2 = new StageBuffer<>();
+    StageBuffer<HashMap<String, Integer>> decode2Execute1 = new StageBuffer<>();
 
-    int fetched = -1;
-    int decoded = -1;
-    int executed = -1;
-    int memoryOperated = -1;
-    int writtenBack = -1;
+
+
 
     boolean done = true;
 
@@ -56,14 +53,13 @@ public class CPU {
 
         // saving instructions to instruction memory
         for (int index = 0; index < instructions.size();index++) {
-            int instruction = instructions.get(index);
+            Object instruction = instructions.get(index);
             memory.setWriteAddress(index);
             memory.writeData(instruction);
             instructionCount++;
         }
 //        int cycle = 1;
-        int decodeCycles = 1;
-        int executeCycles = 1;
+
         int cycle = 1;
         while (true) {
             System.out.println("Cycle: "+cycle);
@@ -72,142 +68,115 @@ public class CPU {
             if(cycle % 2 == 1){
                 fetch();
             }
-            decode(decodeCycles);
-            execute(executeCycles);
+            decode1();
+            decode2();
+            execute1();
+            execute2();
             if(cycle % 2 == 0){
                 memoryOp();
             }
             writeBack();
-            decodeCycles++;
-            executeCycles++;
+
 
             System.out.println("--------------------------------------");
             cycle++;
 
-            if(fetched == -1 && decoded == -1 && executed == -1 && writtenBack == -1 && memoryOperated == -1) break;
+
         }
     }
+
+
 
     public void fetch() {
         memory.setReadAddress(pc);
         int instruction = memory.getInstruction();
-        fetched = instruction;
         System.out.println("fetch: "+ instruction);
         pc++;
-        fetchQueue.add(instruction);
-        if(pc <= instructionCount){
-            done = false;
+        fetchDecode1.setNewBlock(instruction);
+        if(instruction == -1){
+            // TODO when instruction end
         }
     }
 
-    public void decode(int cycles){
-        if(cycles %2 == 0)
-            decoded = -1;
-        if(decodeQueue.size() > 0){
-            // decode prev instruction
-            int instruction = decodeQueue.poll();
-            decoded = instruction;
-            System.out.println("decode: "+ instruction);
+    public void decode1(){
+            Object inst = fetchDecode1.getOldBlock();
+            if (inst != null) {
+                int instruction = (int) inst;
+                System.out.println("decoding 1: " + instruction);
+                decoder.decode(instruction);
+                HashMap<String, Integer> map = new HashMap<>();
 
-            decoder.decode(instruction);
-            registerFile.setReadReg1(decoder.getR2());
-            registerFile.setReadReg2(decoder.getR3());
-            registerFile.setWriteReg(decoder.getR1());
+                map.put("r1", decoder.getR1());
+                map.put("r2", decoder.getR2());
+                map.put("r3", decoder.getR3());
+                map.put("imm", decoder.getImm());
+                map.put("shamt", decoder.getShamt());
+                map.put("address", decoder.getAddress());
+                map.put("instruction", instruction);
+                map.put("pc", pc);
+                decode1Decode2.setNewBlock(map);
+
+            }
+        }
+
+    public void decode2(){
+        HashMap<String, Integer> map = decode1Decode2.getOldBlock();
+        if (map != null) {
+            System.out.println("decoding 2: " + map.get("instruction"));
+            registerFile.setReadReg1(map.get("r2"));
+            registerFile.setReadReg2(map.get("r3"));
+            registerFile.setWriteReg(map.get("r1"));
             registerFile.setRegWrite(controlUnit.isRegWrite());
 
-        }
-        if(fetchQueue.size() > 0){
-            int instruction = fetchQueue.peek();
-
-                decodeQueue.add(fetchQueue.poll());
-                decoded = instruction;
+            HashMap<String, Integer> map2 = new HashMap<>();
+            map2.put("imm", map.get("imm"));
+            map2.put("shamt", map.get("shamt"));
+            map2.put("address", map.get("address"));
+            map2.put("instruction", map.get("instruction"));
+            map2.put("readData1", registerFile.getData1());
+            map2.put("readData2", registerFile.getData2());
+            map2.put("pc", pc);
+            decode2Execute1.setNewBlock(map2);
 
         }
     }
 
-    public void execute(int cycles){
-//        if(cycles %2 == 0)
-//            return;
-        if(executeQueue.size() > 0){
-            // decode prev instruction
-            int instruction = executeQueue.poll();
-            executed = instruction;
+
+
+    public void execute1(){
+        HashMap<String, Integer> map = decode2Execute1.getOldBlock();
+        if (map != null) {
+
+            int instruction = map.get("instruction");
             System.out.println("execute: "+ instruction);
 
             alu.setControl(controlUnit.getALUOp());
-            alu.setOp1(registerFile.getData1());
+            alu.setOp1(map.get("readData1"));
             if(controlUnit.isALUSrc()){
                 int op = instruction >> 28;
-                if(op == 2 || op==3 || op==4 || op==5 || op==6  || op==10 || op==11){
-                    alu.setOp2(decoder.getImm());
+
+                if(op == 0b0010 || op==0b0011 || op==0b0100|| op==0b0101 || op == 0b0110  || op == -6 || op== -5){
+                    alu.setOp2(map.get("imm"));
                 }else if(op == 7){
-                    alu.setOp2(decoder.getAddress());
-                }else if(op == 8 || op==9){
-                    alu.setOp2(decoder.getShamt());
+                    alu.setOp2(map.get("address"));
+                }else if(op == -8 || op==-7){
+                    alu.setOp2(map.get("shamt"));
                 }
                 // TODO sign extended immediate or shamt
+                // TODO sign extender ask about it
             }else{
-                alu.setOp2(registerFile.getData2());
-            }
-        }
-        if(decodeQueue.size() > 0){
-            int instruction = decodeQueue.peek();
-            if(instruction != decoded){
-                executeQueue.add(decodeQueue.poll());
-                executed = instruction;
-            }else{
-                decoded = -1;
+                alu.setOp2(map.get("readData2"));
             }
         }
     }
 
-    public void memoryOp(){
-
-        if(memoryQueue.size() > 0){
-            int instruction = memoryQueue.poll();
-            memoryOperated = instruction;
-            System.out.println("memory: "+ instruction);
-
-            memory.setMemRead(controlUnit.isMemRead());
-            memory.setMemWrite(controlUnit.isMemWrite());
-            memory.setReadAddress(alu.getResult());
-            memory.writeData(registerFile.getData2());
-
-        }
-        if(executeQueue.size() > 0){
-            int instruction = executeQueue.peek();
-            if(instruction != executed){
-                memoryQueue.add(executeQueue.poll());
-                memoryOperated = instruction;
-            }else{
-                executed = -1;
-            }
-        }
+    public void execute2() {
+        //TODO FOR JUMP AND BRANCH
     }
 
-    public void writeBack(){
+    public void memoryOp(){}
 
-        if(wbQueue.size()>0){
-            int instruction = wbQueue.poll();
-            writtenBack = instruction;
-            System.out.println("write back: "+ instruction);
-
-            if(controlUnit.isMemtoReg()){
-                registerFile.writeData(memory.readData());
-            }else{
-                registerFile.writeData(alu.getResult());
-            }
-        }
-        if(memoryQueue.size() > 0){
-            int instruction = memoryQueue.peek();
-            if(instruction == memoryOperated){
-                wbQueue.add(memoryQueue.poll());
-                writtenBack = instruction;
-            }else{
-                memoryOperated = -1;
-            }
-        }
-    }
+    public void writeBack(){}
 
     public static void main(String[] args) {
         try {

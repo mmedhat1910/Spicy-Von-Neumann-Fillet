@@ -31,8 +31,8 @@ public class ALU {
             case 4 -> result = op1 | op2;
             case 5 -> result = op1 << op2;
             case 6 -> result = op1 >> op2;
-            case 7 -> result = op1 >> 28 | op2;
-            //TODO
+            case 7 -> result = op1 >> 28 | op2; // TODO when implementing jump
+
         }
         zero = result == 0;
     }

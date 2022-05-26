@@ -1,5 +1,6 @@
-package Components;
+package Tests;
 
+import Components.MainMemory;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

@@ -7,6 +7,7 @@ public class RegisterFile {
     private int readReg2;
 
     public void setWriteReg(int writeReg) {
+        //TODO handle address out of bound
         this.writeReg = writeReg;
     }
 

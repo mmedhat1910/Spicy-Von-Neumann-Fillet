@@ -1,5 +1,7 @@
 package Components;
 
+import java.util.Arrays;
+
 public class RegisterFile {
     private int[] registers = new int[32];
     private boolean regWrite;
@@ -34,7 +36,9 @@ public class RegisterFile {
     }
 
 
-
+    public String toString(){
+        return "Registers: "+ Arrays.toString(registers);
+    }
 
 
     public void setReadReg1(int readReg1) {

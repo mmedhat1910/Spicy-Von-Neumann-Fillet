@@ -8,6 +8,8 @@ public class ControlUnit {
     private boolean MemtoReg = false;
     private boolean ALUSrc = false;
     private boolean RegWrite = false;
+
+
     private int ALUOp;
 
 
@@ -19,7 +21,7 @@ public class ControlUnit {
         MemWrite = opcode == 11 || opcode == -5;
         ALUSrc = opcode == 2 || opcode == 3 || opcode == 5 || opcode == 6  ||  opcode == 8 || opcode == 9 || opcode == 10 || opcode == 11 || opcode == -8 || opcode ==-7 || opcode == -6 || opcode == -5;
         RegWrite = opcode == 0 || opcode == 1 || opcode == 2 || opcode == 3  || opcode == 5 || opcode == 6  || opcode == -8 || opcode == -7 ||  opcode == 10 || opcode == -6;
-
+//        PassR1 =  opcode == 10 || opcode == -6;;
 //        if(opcode == 0 || opcode == 3 || opcode == 7 || opcode == 10 || opcode == 11){
 //            ALUOp = 0b000;
 //        }else

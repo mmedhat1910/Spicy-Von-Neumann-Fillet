@@ -6,11 +6,7 @@ public class MainMemory{
     private boolean MemRead; //Boolean flag coming from Control Unit
     private boolean MemWrite; //Boolean flag coming from Control Unit
     private int address;
-    private int writeData;
 
-    public void setWriteData(int writeData) {
-        this.writeData = writeData;
-    }
 
     public int getAddress() {
         return address;
@@ -42,7 +38,7 @@ public class MainMemory{
         if(MemWrite && address > 1023) {
             memory[address] = inputValue;
             System.out.println("Writing to data memory");
-        }else if (address <= 1023) {
+        }else if (MemWrite && address <= 1023) {
             memory[address] = inputValue;
             System.out.println("Writing to instruction memory");
         }else {
@@ -56,5 +52,17 @@ public class MainMemory{
 
     public void setMemWrite(boolean memWrite) {
         MemWrite = memWrite;
+    }
+
+    public void display(int address){
+        System.out.println("Memory at address "+address+" is "+memory[address]);
+
+    }
+    public void display(int address1, int address2){
+        System.out.print("[");
+        for(int i=address1;i<=address2;i++){
+            System.out.print(memory[i]+", ");
+        }
+        System.out.println("]");
     }
 }

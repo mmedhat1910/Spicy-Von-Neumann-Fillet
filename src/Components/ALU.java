@@ -9,20 +9,7 @@ public class ALU {
 
 
     public int getResult () {
-        return result;
-    }
-    public boolean getZero () {
-        return zero;
-    }
 
-    public void setOp1(int op1){
-        this.op1 = op1;
-    }
-    public void setOp2(int op2){
-        this.op2 = op2;
-    }
-    public void setControl(int control){
-        this.control = control;
         switch (control) {
             case 0 -> result = op1 + op2;
             case 1 -> result = op1 - op2;
@@ -35,6 +22,21 @@ public class ALU {
 
         }
         zero = result == 0;
+        return result;
+    }
+    public boolean getZero () {
+        zero = result == 0;
+        return zero;
+    }
+
+    public void setOp1(int op1){
+        this.op1 = op1;
+    }
+    public void setOp2(int op2){
+        this.op2 = op2;
+    }
+    public void setControl(int control){
+        this.control = control;
     }
 
 }

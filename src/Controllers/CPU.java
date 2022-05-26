@@ -7,6 +7,7 @@ import Components.RegisterFile;
 import Utils.Parser;
 import Utils.PipelineRegister;
 
+import javax.sound.midi.Soundbank;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,16 +52,18 @@ public class CPU {
 //        int index = 0;
 
         // saving instructions to instruction memory
+        memory.setMemWrite(true);
         for (int index = 0; index < instructions.size();index++) {
             int instruction = instructions.get(index);
             memory.setAddress(index);
             memory.writeData(instruction);
             instructionCount++;
         }
+        memory.setMemWrite(false);
 //        int cycle = 1;
 
         int cycle = 1;
-        while(true) {
+        while(cycle < 50) { //TODO: change this
             System.out.println("Cycle: "+cycle);
             System.out.println("--------------------------------------");
 
@@ -80,13 +83,14 @@ public class CPU {
 
 
             propagatePipelines();
-            displayPipelines();
+//            displayPipelines();
             cycle++;
-
             System.out.println("--------------------------------------");
 
-
         }
+            System.out.println(registerFile);
+            memory.display(1490, 1510);
+            System.out.println("********** CHANGE WHILE LOOP ********** ");
     }
 
 
@@ -132,7 +136,6 @@ public class CPU {
                 map.put("ALUOp", controlUnit.getALUOp());
 
 
-
                 // registers
                 map.put("r1", decoder.getR1());
                 map.put("r2", decoder.getR2());
@@ -153,8 +156,8 @@ public class CPU {
             System.out.println("decoding 2: " + map.get("instruction"));
             registerFile.setReadReg1(map.get("r2"));
             registerFile.setReadReg2(map.get("r3"));
-//            registerFile.setWriteReg(map.get("r1"));
-//            registerFile.setRegWrite(map.get("regWrite") == 1);
+            registerFile.setWriteReg(map.get("r1"));
+            registerFile.setRegWrite(map.get("regWrite") == 1);
 
 
 
@@ -175,7 +178,13 @@ public class CPU {
             decode2Map.put("instruction", map.get("instruction"));
             decode2Map.put("readData1", registerFile.getData1());
             decode2Map.put("readData2", registerFile.getData2());
+
+
             decode2Map.put("pc", map.get("pc"));
+            // pass r1 to memory
+            registerFile.setReadReg1(map.get("r1"));
+            decode2Map.put("readDataR1", registerFile.getData1());
+
             decode2_execute1.setNewBlock(decode2Map);
 
         }
@@ -224,6 +233,7 @@ public class CPU {
             execute1Map.put("instruction", map.get("instruction"));
             execute1Map.put("pc", map.get("pc"));
             execute1Map.put("not_zero", alu.getZero() ? 0 : 1); // if not zero then 1 else 0
+            execute1Map.put("readDataR1", map.get("readDataR1"));
             execute1_execute2.setNewBlock(execute1Map);
         }
     }
@@ -242,7 +252,7 @@ public class CPU {
             execute2Map.put("regWrite", map.get("regWrite"));
             execute2Map.put("pc", map.get("pc"));
             execute2Map.put("instruction", map.get("instruction"));
-
+            execute2Map.put("readDataR1", map.get("readDataR1"));
             execute2_memory.setNewBlock(execute2Map);
         }
 
@@ -257,7 +267,7 @@ public class CPU {
             memory.setMemWrite(map.get("memWrite") == 1);
             memory.setMemRead(map.get("memRead") == 1);
             memory.setAddress(map.get("aluResult"));
-            memory.setWriteData( map.get("r1")); // SW R1 R2 IMM -> MEM[R2+IMM] = R1
+            memory.writeData(map.get("readDataR1")); // SW R1 R2 IMM -> MEM[R2+IMM] = R1
 
             HashMap<String, Integer> memoryMap = new HashMap<>();
 
@@ -277,7 +287,7 @@ public class CPU {
         if(map != null){
             System.out.println("writeBack: "+ map.get("instruction"));
             registerFile.setRegWrite(map.get("regWrite") == 1);
-            registerFile.setWriteReg(map.get("memoryReadData"));
+            registerFile.setWriteReg(map.get("r1"));
             if(map.get("memToReg") == 1){
                 registerFile.writeData(map.get("memoryReadData"));
             }else{

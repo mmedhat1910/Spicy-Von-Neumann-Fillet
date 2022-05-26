@@ -26,6 +26,8 @@ public class CPU {
     PipelineRegister<HashMap<String, Integer>> decode1_decode2 = new PipelineRegister<>();
     PipelineRegister<HashMap<String, Integer>> decode2_execute1 = new PipelineRegister<>();
     PipelineRegister<HashMap<String, Integer>> execute1_execute2 = new PipelineRegister<>();
+    PipelineRegister<HashMap<String, Integer>> execute2_memory = new PipelineRegister<>();
+    PipelineRegister<HashMap<String, Integer>> memory_writeBack = new PipelineRegister<>();
 
 
 
@@ -50,19 +52,20 @@ public class CPU {
 
         // saving instructions to instruction memory
         for (int index = 0; index < instructions.size();index++) {
-            Object instruction = instructions.get(index);
-            memory.setWriteAddress(index);
-//            memory.writeData(instruction);
+            int instruction = instructions.get(index);
+            memory.setAddress(index);
+            memory.writeData(instruction);
             instructionCount++;
         }
 //        int cycle = 1;
 
         int cycle = 1;
-        while (true) {
+        do  {
             System.out.println("Cycle: "+cycle);
             System.out.println("--------------------------------------");
 
             if(cycle % 2 == 1){
+                //fetch runs in odd cycles
                 fetch();
             }
             decode1();
@@ -70,22 +73,26 @@ public class CPU {
             execute1();
             execute2();
             if(cycle % 2 == 0){
+                //memory runs in even cycles
                 memoryOp();
             }
             writeBack();
 
 
-            System.out.println("--------------------------------------");
+            propagatePipelines();
+            displayPipelines();
             cycle++;
 
+            System.out.println("--------------------------------------");
 
-        }
+
+        }while(!gameOver());
     }
 
 
 
     public void fetch() {
-        memory.setReadAddress(pc);
+        memory.setAddress(pc);
         int instruction = memory.getInstruction();
         System.out.println("fetch: "+ instruction);
         HashMap<String, Integer> instructionMap = new HashMap<>();
@@ -141,8 +148,8 @@ public class CPU {
             System.out.println("decoding 2: " + map.get("instruction"));
             registerFile.setReadReg1(map.get("r2"));
             registerFile.setReadReg2(map.get("r3"));
-            registerFile.setWriteReg(map.get("r1"));
-            registerFile.setRegWrite(map.get("regWrite") == 1);
+//            registerFile.setWriteReg(map.get("r1"));
+//            registerFile.setRegWrite(map.get("regWrite") == 1);
 
 
 
@@ -155,7 +162,8 @@ public class CPU {
             decode2Map.put("regDst", map.get("regDst"));
             decode2Map.put("ALUSrc", map.get("ALUSrc"));
             decode2Map.put("ALUOp", map.get("ALUOp"));
-
+            decode2Map.put("r1", map.get("r1"));
+            decode2Map.put("regWrite", map.get("regWrite"));
             decode2Map.put("imm", map.get("imm"));
             decode2Map.put("shamt", map.get("shamt"));
             decode2Map.put("address", map.get("address"));
@@ -201,13 +209,15 @@ public class CPU {
             execute1Map.put("memWrite", map.get("memWrite"));
             execute1Map.put("branch", map.get("branch"));
             execute1Map.put("memToReg", map.get("memToReg"));
-            execute1Map.put("regDst", map.get("regDst"));
-
+            execute1Map.put("readData2", map.get("readData2"));
+            execute1Map.put("r1", map.get("r1"));
+            execute1Map.put("regWrite", map.get("regWrite"));
+            execute1Map.put("aluResult", alu.getResult());
             execute1Map.put("imm", map.get("imm"));
             execute1Map.put("shamt", map.get("shamt"));
             execute1Map.put("address", map.get("address"));
             execute1Map.put("instruction", map.get("instruction"));
-            execute1Map.put("pc", pc);
+            execute1Map.put("pc", map.get("pc"));
             execute1Map.put("not_zero", alu.getZero() ? 0 : 1); // if not zero then 1 else 0
             execute1_execute2.setNewBlock(execute1Map);
         }
@@ -217,7 +227,18 @@ public class CPU {
         HashMap<String, Integer> map = execute1_execute2.getOldBlock();
         if(map != null){
             System.out.println("execute2: "+ map.get("instruction"));
+            HashMap<String, Integer> execute2Map = new HashMap<>();
+            execute2Map.put("memRead", map.get("memRead"));
+            execute2Map.put("memWrite", map.get("memWrite"));
+            execute2Map.put("memToReg", map.get("memToReg"));
+            execute2Map.put("readData2", map.get("readData2"));
+            execute2Map.put("aluResult", map.get("aluResult"));
+            execute2Map.put("r1", map.get("r1"));
+            execute2Map.put("regWrite", map.get("regWrite"));
+            execute2Map.put("pc", map.get("pc"));
+            execute2Map.put("instruction", map.get("instruction"));
 
+            execute2_memory.setNewBlock(execute2Map);
         }
 
 
@@ -225,10 +246,72 @@ public class CPU {
     }
 
     public void memoryOp(){
+        HashMap<String, Integer> map = execute2_memory.getOldBlock();
+        if(map != null){
+            System.out.println("memory: "+ map.get("instruction"));
+            memory.setMemWrite(map.get("memWrite") == 1);
+            memory.setMemRead(map.get("memRead") == 1);
+            memory.setAddress(map.get("aluResult"));
+            memory.setWriteData( map.get("r1")); // SW R1 R2 IMM -> MEM[R2+IMM] = R1
+
+            HashMap<String, Integer> memoryMap = new HashMap<>();
+
+            memoryMap.put("r1", map.get("r1"));
+            memoryMap.put("regWrite", map.get("regWrite"));
+            memoryMap.put("memoryReadData", memory.getReadData());
+            memoryMap.put("memToReg", map.get("memToReg"));
+            memoryMap.put("aluResult", map.get("aluResult"));
+            memoryMap.put("pc", map.get("pc"));
+            memoryMap.put("instruction", map.get("instruction"));
+            memory_writeBack.setNewBlock(memoryMap);
+        }
+    }
+
+    public void writeBack(){
+        HashMap<String, Integer> map = memory_writeBack.getOldBlock();
+        if(map != null){
+            System.out.println("writeBack: "+ map.get("instruction"));
+            registerFile.setRegWrite(map.get("regWrite") == 1);
+            registerFile.setWriteReg(map.get("memoryReadData"));
+            if(map.get("memToReg") == 1){
+                registerFile.writeData(map.get("memoryReadData"));
+            }else{
+                registerFile.writeData(map.get("aluResult"));
+            }
+
+
+        }
+    }
+
+
+    public void displayPipelines(){
+        System.out.println("IF/ID1");
+        System.out.println(fetch_decode1);
+        System.out.println("ID1/ID2");
+        System.out.println(decode1_decode2);
+        System.out.println("ID2/EXE1");
+        System.out.println(decode2_execute1);
+        System.out.println("EXE1/EXE2");
+        System.out.println(execute1_execute2);
+        System.out.println("EXE2/MEM");
+        System.out.println(execute2_memory);
+        System.out.println("MEM/WB");
+        System.out.println(memory_writeBack);
 
     }
 
-    public void writeBack(){}
+    public void propagatePipelines(){
+        System.out.println("Propagate Pipelines");
+        decode1_decode2.propagate();
+        decode2_execute1.propagate();
+        execute1_execute2.propagate();
+        execute2_memory.propagate();
+        memory_writeBack.propagate();
+    }
+
+    public boolean gameOver(){
+        return decode1_decode2.getOldBlock() == null && decode2_execute1.getOldBlock() == null && execute1_execute2.getOldBlock() == null && execute2_memory.getOldBlock() == null && memory_writeBack.getOldBlock() == null && fetch_decode1.getOldBlock() == null;
+    }
 
     public static void main(String[] args) {
         try {

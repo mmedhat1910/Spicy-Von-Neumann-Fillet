@@ -22,6 +22,7 @@ public class Parser {
 
         instructionValue = switch (instruction[0]) {
             // R types
+
             case "SUB" -> 0b0001;
             case "SLL" -> 0b1000;
             case "SRL" -> 0b1001;
@@ -36,20 +37,20 @@ public class Parser {
             default -> instructionValue;
         };
         //shift opcode
-        instructionValue = instructionValue << 26;
+        instructionValue = instructionValue << 28;
 
         //R1
         int tempReg =  Integer.parseInt(instruction[1].substring(1));
-        tempReg = tempReg << 22;
+        tempReg = tempReg << 23;
         instructionValue = instructionValue | tempReg;
         //R2
         tempReg =  Integer.parseInt(instruction[2].substring(1));
-        tempReg = tempReg << 17;
+        tempReg = tempReg << 18;
         instructionValue = instructionValue | tempReg;
 
         if(instruction[0].equals("ADD") || instruction[0].equals("SUB")){
             int r3 =  Integer.parseInt(instruction[3].substring(1));
-            r3 = r3 << 12;
+            r3 = r3 << 13;
             return instructionValue | r3;
         }
         //shamt or imm

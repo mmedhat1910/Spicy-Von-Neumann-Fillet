@@ -5,9 +5,6 @@ public class PipelineRegister<T>{
     private T oldBlock;
 
 
-    public T getNewBlock() {
-        return newBlock;
-    }
 
     public T getOldBlock() {
         return oldBlock;

@@ -58,5 +58,31 @@ public class Decoder {
     public int getAddress() {
         return address;
     }
+
+    public static void main(String[] args) {
+        int instruction = 0b110001000000000000000000000100;
+        System.out.println(instruction);
+
+
+        int opcode = (instruction >> 28);
+        int r1 = instruction  & 0b00001111100000000000000000000000;
+        int r2 = instruction  & 0b00000000011111000000000000000000;
+        int r3 = instruction  & 0b00000000000000111110000000000000;
+        int shamt =  0b00000000000000000001111111111111;
+        int imm = instruction & 0b00000000000000111111111111111111;
+        int address = instruction & 0b00001111111111111111111111111111;
+
+
+        System.out.println(opcode);
+        System.out.println(r1);
+        System.out.println(r2);
+        System.out.println(r3);
+        System.out.println(shamt);
+        System.out.println(imm);
+        System.out.println(address);
+
+
+
+    }
 }
 

@@ -60,7 +60,7 @@ public class CPU {
 //        int cycle = 1;
 
         int cycle = 1;
-        do  {
+        while(true) {
             System.out.println("Cycle: "+cycle);
             System.out.println("--------------------------------------");
 
@@ -86,7 +86,7 @@ public class CPU {
             System.out.println("--------------------------------------");
 
 
-        }while(!gameOver());
+        }
     }
 
 
@@ -94,6 +94,11 @@ public class CPU {
     public void fetch() {
         memory.setAddress(pc);
         int instruction = memory.getInstruction();
+        //TODO REMOVE
+        if(instruction == 0){
+            System.out.println("HALT");
+            return;
+        }
         System.out.println("fetch: "+ instruction);
         HashMap<String, Integer> instructionMap = new HashMap<>();
         instructionMap.put("instruction", instruction);
@@ -302,6 +307,7 @@ public class CPU {
 
     public void propagatePipelines(){
         System.out.println("Propagate Pipelines");
+        fetch_decode1.propagate();
         decode1_decode2.propagate();
         decode2_execute1.propagate();
         execute1_execute2.propagate();

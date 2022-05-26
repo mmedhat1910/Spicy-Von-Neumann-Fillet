@@ -28,7 +28,7 @@ public class RegisterFile {
         if (regWrite) {
             this.registers[writeReg] = data;
         } else {
-            System.out.println("Error");
+            System.out.println("Error writing in register");
         }
     }
 

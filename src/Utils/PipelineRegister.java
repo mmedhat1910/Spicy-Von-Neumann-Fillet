@@ -23,4 +23,7 @@ public class PipelineRegister<T>{
     }
 
 
+    public T getNewBlock() {
+        return newBlock;
+    }
 }

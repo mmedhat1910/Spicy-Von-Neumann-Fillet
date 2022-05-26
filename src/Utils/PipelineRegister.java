@@ -1,6 +1,6 @@
 package Utils;
 
-public class StageBuffer<T>{
+public class PipelineRegister<T>{
     private T newBlock;
     private T oldBlock;
 

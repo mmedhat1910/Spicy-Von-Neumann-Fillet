@@ -5,13 +5,11 @@ import Components.Decoder;
 import Components.MainMemory;
 import Components.RegisterFile;
 import Utils.Parser;
-import Utils.StageBuffer;
+import Utils.PipelineRegister;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
 
 public class CPU {
     int pc;
@@ -24,10 +22,10 @@ public class CPU {
     int instructionCount = 0;
     int sp;
 
-    StageBuffer<Object> fetchDecode1 = new StageBuffer<>();
-    StageBuffer<HashMap<String, Integer>> decode1Decode2 = new StageBuffer<>();
-    StageBuffer<HashMap<String, Integer>> decode2Execute1 = new StageBuffer<>();
-
+    PipelineRegister<HashMap<String, Integer>> fetch_decode1 = new PipelineRegister<>();
+    PipelineRegister<HashMap<String, Integer>> decode1_decode2 = new PipelineRegister<>();
+    PipelineRegister<HashMap<String, Integer>> decode2_execute1 = new PipelineRegister<>();
+    PipelineRegister<HashMap<String, Integer>> execute1_execute2 = new PipelineRegister<>();
 
 
 
@@ -41,7 +39,6 @@ public class CPU {
         this.alu = new ALU();
         this.pc = 1;
         this.sp=1024;
-
     }
 
     public void run(String filename) throws IOException {
@@ -91,21 +88,40 @@ public class CPU {
         memory.setReadAddress(pc);
         int instruction = memory.getInstruction();
         System.out.println("fetch: "+ instruction);
+        HashMap<String, Integer> instructionMap = new HashMap<>();
+        instructionMap.put("instruction", instruction);
+        instructionMap.put("pc", pc);
+        fetch_decode1.setNewBlock(instructionMap);
         pc++;
-        fetchDecode1.setNewBlock(instruction);
         if(instruction == -1){
             // TODO when instruction end
         }
     }
 
     public void decode1(){
-            Object inst = fetchDecode1.getOldBlock();
-            if (inst != null) {
-                int instruction = (int) inst;
+        HashMap<String, Integer> fetchMap = fetch_decode1.getOldBlock();
+            if (fetchMap != null) {
+                int instruction = fetchMap.get("instruction");
                 System.out.println("decoding 1: " + instruction);
                 decoder.decode(instruction);
                 HashMap<String, Integer> map = new HashMap<>();
 
+                // control
+                controlUnit.run(decoder.getOpcode());
+
+
+                map.put("regWrite", controlUnit.isRegWrite() ? 1 : 0);
+                map.put("memRead", controlUnit.isMemRead() ? 1 : 0);
+                map.put("memWrite", controlUnit.isMemWrite() ? 1 : 0);
+                map.put("branch", controlUnit.isBranch() ? 1 : 0);
+                map.put("memToReg", controlUnit.isMemtoReg() ? 1 : 0);
+                map.put("regDst", controlUnit.isRegDst() ? 1 : 0);
+                map.put("ALUSrc", controlUnit.isALUSrc() ? 1 : 0);
+                map.put("ALUOp", controlUnit.getALUOp());
+
+
+
+                // registers
                 map.put("r1", decoder.getR1());
                 map.put("r2", decoder.getR2());
                 map.put("r3", decoder.getR3());
@@ -113,30 +129,41 @@ public class CPU {
                 map.put("shamt", decoder.getShamt());
                 map.put("address", decoder.getAddress());
                 map.put("instruction", instruction);
-                map.put("pc", pc);
-                decode1Decode2.setNewBlock(map);
+                map.put("pc", fetchMap.get("pc"));
+                decode1_decode2.setNewBlock(map);
 
             }
         }
 
     public void decode2(){
-        HashMap<String, Integer> map = decode1Decode2.getOldBlock();
+        HashMap<String, Integer> map = decode1_decode2.getOldBlock();
         if (map != null) {
             System.out.println("decoding 2: " + map.get("instruction"));
             registerFile.setReadReg1(map.get("r2"));
             registerFile.setReadReg2(map.get("r3"));
             registerFile.setWriteReg(map.get("r1"));
-            registerFile.setRegWrite(controlUnit.isRegWrite());
+            registerFile.setRegWrite(map.get("regWrite") == 1);
 
-            HashMap<String, Integer> map2 = new HashMap<>();
-            map2.put("imm", map.get("imm"));
-            map2.put("shamt", map.get("shamt"));
-            map2.put("address", map.get("address"));
-            map2.put("instruction", map.get("instruction"));
-            map2.put("readData1", registerFile.getData1());
-            map2.put("readData2", registerFile.getData2());
-            map2.put("pc", pc);
-            decode2Execute1.setNewBlock(map2);
+
+
+            HashMap<String, Integer> decode2Map = new HashMap<>();
+
+            decode2Map.put("memRead", map.get("memRead"));
+            decode2Map.put("memWrite", map.get("memWrite"));
+            decode2Map.put("branch", map.get("branch"));
+            decode2Map.put("memToReg", map.get("memToReg"));
+            decode2Map.put("regDst", map.get("regDst"));
+            decode2Map.put("ALUSrc", map.get("ALUSrc"));
+            decode2Map.put("ALUOp", map.get("ALUOp"));
+
+            decode2Map.put("imm", map.get("imm"));
+            decode2Map.put("shamt", map.get("shamt"));
+            decode2Map.put("address", map.get("address"));
+            decode2Map.put("instruction", map.get("instruction"));
+            decode2Map.put("readData1", registerFile.getData1());
+            decode2Map.put("readData2", registerFile.getData2());
+            decode2Map.put("pc", map.get("pc"));
+            decode2_execute1.setNewBlock(decode2Map);
 
         }
     }
@@ -144,15 +171,15 @@ public class CPU {
 
 
     public void execute1(){
-        HashMap<String, Integer> map = decode2Execute1.getOldBlock();
+        HashMap<String, Integer> map = decode2_execute1.getOldBlock();
         if (map != null) {
 
             int instruction = map.get("instruction");
             System.out.println("execute: "+ instruction);
 
-            alu.setControl(controlUnit.getALUOp());
+            alu.setControl(map.get("ALUOp"));
             alu.setOp1(map.get("readData1"));
-            if(controlUnit.isALUSrc()){
+            if(map.get("ALUSrc") == 1){
                 int op = instruction >> 28;
 
                 if(op == 0b0010 || op==0b0011 || op==0b0100|| op==0b0101 || op == 0b0110  || op == -6 || op== -5){
@@ -167,14 +194,39 @@ public class CPU {
             }else{
                 alu.setOp2(map.get("readData2"));
             }
+
+            HashMap<String, Integer> execute1Map = new HashMap<>();
+
+            execute1Map.put("memRead", map.get("memRead"));
+            execute1Map.put("memWrite", map.get("memWrite"));
+            execute1Map.put("branch", map.get("branch"));
+            execute1Map.put("memToReg", map.get("memToReg"));
+            execute1Map.put("regDst", map.get("regDst"));
+
+            execute1Map.put("imm", map.get("imm"));
+            execute1Map.put("shamt", map.get("shamt"));
+            execute1Map.put("address", map.get("address"));
+            execute1Map.put("instruction", map.get("instruction"));
+            execute1Map.put("pc", pc);
+            execute1Map.put("not_zero", alu.getZero() ? 0 : 1); // if not zero then 1 else 0
+            execute1_execute2.setNewBlock(execute1Map);
         }
     }
 
     public void execute2() {
+        HashMap<String, Integer> map = execute1_execute2.getOldBlock();
+        if(map != null){
+            System.out.println("execute2: "+ map.get("instruction"));
+
+        }
+
+
         //TODO FOR JUMP AND BRANCH
     }
 
-    public void memoryOp(){}
+    public void memoryOp(){
+
+    }
 
     public void writeBack(){}
 

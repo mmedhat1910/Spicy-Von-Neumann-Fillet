@@ -16,9 +16,12 @@ public class Decoder {
         // Complete the decode() body...
         opcode = (instruction >> 28);
         r1 = (instruction >> 23) & 0b000011111;
+//        r1 = instruction  & 0b00001111100000000000000000000000;
         r2 = (instruction >> 18) & 0b00000000011111;
+//        r2 =  instruction  & 0b00000000011111000000000000000000;
         r3 = (instruction >> 13) & 0b0000000000000011111;
-        shamt =  0b00000000000000000001111111111111;
+//        r3 =instruction  & 0b00000000000000111110000000000000;
+        shamt = instruction &  0b00000000000000000001111111111111;
         imm = instruction & 0b00000000000000111111111111111111;
         address = instruction & 0b00001111111111111111111111111111;
 

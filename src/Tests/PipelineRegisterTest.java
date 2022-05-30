@@ -23,4 +23,20 @@ public class PipelineRegisterTest {
         assertNull(pipelineRegister.getNewBlock());
         assertNotNull(pipelineRegister.getOldBlock());
     }
+
+    @Test
+    public void testFlush(){
+        PipelineRegister<HashMap<String, Integer>> pipelineRegister = new PipelineRegister<>();
+        HashMap<String, Integer> map = new HashMap<>();
+        map.put("a", 1);
+        map.put("b", 2);
+        pipelineRegister.setNewBlock(map);
+        assertNull(pipelineRegister.getOldBlock());
+        assertNotNull(pipelineRegister.getNewBlock());
+
+        pipelineRegister.propagate();
+        pipelineRegister.flush();
+        assertNull(pipelineRegister.getNewBlock());
+        assertNull(pipelineRegister.getOldBlock());
+    }
 }

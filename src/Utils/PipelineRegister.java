@@ -18,6 +18,11 @@ public class PipelineRegister<T>{
         this.newBlock = null;
     }
 
+    public void flush(){
+        this.newBlock = null;
+        this.oldBlock = null;
+    }
+
     public String toString(){
         return "New: " + this.oldBlock + "\nOld: " + this.newBlock;
     }

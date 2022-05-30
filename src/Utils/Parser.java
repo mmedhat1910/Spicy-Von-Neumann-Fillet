@@ -5,6 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Parser {
     final ArrayList<String> codeText;
@@ -118,6 +119,6 @@ public class Parser {
             case 0b0011 -> instructionArray[0] = "ADDI R" + Integer.toString(r1) + ", R" + Integer.toString(r2) + ", " + Integer.toString(imm);
             case 0b0100 -> instructionArray[0] = "BNE R" + Integer.toString(r1) + ", R" + Integer.toString(r2) + ", " + Integer.toString(imm);
     }
-        return instructionArray[0];
+        return Arrays.toString(instructionArray);
     }
 }

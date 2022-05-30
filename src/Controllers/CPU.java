@@ -239,7 +239,7 @@ public class CPU {
         if(map != null){
             System.out.println("execute2: "+ map.get("instruction"));
             //jump
-            if(map.get("not_zero") == 1 && map.get("branch") == 1){
+            if(map.get("branch") == 1){
                 this.pc = (this.pc & 0b11110000000000000000000000000000) | map.get("address");
                 System.out.println("Jumping to "+this.pc);
                 this.fetch_decode1.flush();

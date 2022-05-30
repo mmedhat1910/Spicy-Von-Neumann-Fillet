@@ -16,6 +16,8 @@ public class ParserTest {
 
     }
 
+
+
     @Test
     public void testParseInstruction_I() throws IOException {
         Parser p = new Parser("code.txt");
@@ -27,5 +29,11 @@ public class ParserTest {
     public void testParseInstruction_J() throws IOException {
         Parser p = new Parser("code.txt");
         assertEquals("Parser test J 3 ",  0b011100000000000000000000000000011,p.parseInstruction("J 3"));
+    }
+
+    @Test
+    public void testReverseParse() throws IOException {
+        Parser p = new Parser("code.txt");
+        assertEquals("Parser test J 3 ",  "J 3",p.reverseParse(0b011100000000000000000000000000011));
     }
 }

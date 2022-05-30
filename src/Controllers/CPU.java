@@ -21,7 +21,6 @@ public class CPU {
     Parser parser;
     ALU alu;
     int instructionCount = 0;
-    int sp;
 
     PipelineRegister<HashMap<String, Integer>> fetch_decode1 = new PipelineRegister<>();
     PipelineRegister<HashMap<String, Integer>> decode1_decode2 = new PipelineRegister<>();
@@ -40,15 +39,14 @@ public class CPU {
         this.decoder = new Decoder();
         this.controlUnit = new ControlUnit();
         this.alu = new ALU();
-        this.pc = 1;
-        this.sp=1024;
+        this.pc = 0;
     }
 
     public void run(String filename) throws IOException {
 
         this.parser = new Parser(filename);
         ArrayList<Integer> instructions = parser.getInstructions();
-        this.pc = 0;
+
 //        int index = 0;
 
         // saving instructions to instruction memory
@@ -190,8 +188,6 @@ public class CPU {
         }
     }
 
-
-
     public void execute1(){
         HashMap<String, Integer> map = decode2_execute1.getOldBlock();
         if (map != null) {
@@ -242,6 +238,17 @@ public class CPU {
         HashMap<String, Integer> map = execute1_execute2.getOldBlock();
         if(map != null){
             System.out.println("execute2: "+ map.get("instruction"));
+            //jump
+            if(map.get("not_zero") == 1 && map.get("branch") == 1){
+                this.pc = (this.pc & 0b11110000000000000000000000000000) | map.get("address");
+                System.out.println("Jumping to "+this.pc);
+                this.fetch_decode1.flush();
+                this.decode1_decode2.flush();
+                this.decode2_execute1.flush();
+            }
+
+
+
             HashMap<String, Integer> execute2Map = new HashMap<>();
             execute2Map.put("memRead", map.get("memRead"));
             execute2Map.put("memWrite", map.get("memWrite"));
@@ -253,7 +260,12 @@ public class CPU {
             execute2Map.put("pc", map.get("pc"));
             execute2Map.put("instruction", map.get("instruction"));
             execute2Map.put("readDataR1", map.get("readDataR1"));
+
+
+
             execute2_memory.setNewBlock(execute2Map);
+
+
         }
 
 

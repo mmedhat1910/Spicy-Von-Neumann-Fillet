@@ -25,7 +25,7 @@ public class ControlUnit {
 //        if(opcode == 0 || opcode == 3 || opcode == 7 || opcode == 10 || opcode == 11){
 //            ALUOp = 0b000;
 //        }else
-        if(opcode == 1 || opcode == 4){
+        if(opcode == 1 || opcode == 4 || opcode == 7){
             // Sub => SUB & BNE
             ALUOp = 0b001;
         }else if(opcode == 2 ){

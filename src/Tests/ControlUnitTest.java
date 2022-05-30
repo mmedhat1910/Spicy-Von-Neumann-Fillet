@@ -79,7 +79,7 @@ public class ControlUnitTest {
         assertFalse(cu.isMemWrite());
         assertFalse(cu.isALUSrc());
         assertFalse(cu.isRegWrite());
-        assertEquals(0b000, cu.getALUOp());
+        assertEquals(0b001, cu.getALUOp());
     }
 
     @Test

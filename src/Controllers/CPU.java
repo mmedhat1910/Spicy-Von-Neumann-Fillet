@@ -200,7 +200,7 @@ public class CPU {
             if(map.get("ALUSrc") == 1){
                 int op = instruction >> 28;
 
-                if(op == 0b0010 || op==0b0011 || op==0b0100|| op==0b0101 || op == 0b0110  || op == -6 || op== -5){
+                if(op == 0b0010 || op==0b0011 || op==0b0101 || op == 0b0110  || op == -6 || op== -5){
                     alu.setOp2(map.get("imm"));
                 }else if(op == 7){
                     alu.setOp2(map.get("address"));
@@ -238,14 +238,31 @@ public class CPU {
         HashMap<String, Integer> map = execute1_execute2.getOldBlock();
         if(map != null){
             System.out.println("execute2: "+ map.get("instruction"));
-            //jump
+
+
+            //branch
+            System.out.println("Not Zero: "+ map.get("not_zero"));
+            int instruction = map.get("instruction");
+            int opcode = instruction >> 28;
+//            if(map.get("branch") == 1 && map.get("not_zero") == 1){
             if(map.get("branch") == 1){
-                this.pc = (this.pc & 0b11110000000000000000000000000000) | map.get("address");
-                System.out.println("Jumping to "+this.pc);
+                System.out.println("Immediate " + map.get("imm"));
+                this.pc = map.get("pc") + map.get("imm");
+
+                System.out.println("Branching to "+this.pc);
+                this.fetch_decode1.flush();
+                this.decode1_decode2.flush();
+                this.decode2_execute1.flush();
+            }else if(opcode == 0b0111){ //jump
+                this.pc = ((map.get("pc")) & 0b11110000000000000000000000000000) | map.get("address");
+                // TODO: change this to handle pc - 1
+                System.out.println("Jumping to "+this.pc + " by  "+ map.get("instruction"));
                 this.fetch_decode1.flush();
                 this.decode1_decode2.flush();
                 this.decode2_execute1.flush();
             }
+
+
 
 
 

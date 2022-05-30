@@ -25,8 +25,7 @@ public class ALU {
         return result;
     }
     public boolean getZero () {
-        zero = result == 0;
-        return zero;
+        return this.zero;
     }
 
     public void setOp1(int op1){

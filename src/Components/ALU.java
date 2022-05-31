@@ -7,6 +7,13 @@ public class ALU {
     private int result;
     private boolean zero;
 
+    public int getOp1() {
+        return op1;
+    }
+
+    public int getOp2() {
+        return op2;
+    }
 
     public int getResult () {
 
@@ -25,6 +32,7 @@ public class ALU {
         return result;
     }
     public boolean getZero () {
+        getResult();
         return this.zero;
     }
 

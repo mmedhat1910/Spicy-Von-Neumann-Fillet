@@ -39,7 +39,7 @@ public class CPU {
         this.decoder = new Decoder();
         this.controlUnit = new ControlUnit();
         this.alu = new ALU();
-        this.pc = 0;
+        this.pc = 1;
     }
 
     public void run(String filename) throws IOException {
@@ -94,7 +94,7 @@ public class CPU {
 
 
     public void fetch() {
-        memory.setAddress(pc);
+        memory.setAddress(pc-1);
         int instruction = memory.getInstruction();
         //TODO REMOVE
         if(instruction == 0){
@@ -116,7 +116,12 @@ public class CPU {
         HashMap<String, Integer> fetchMap = fetch_decode1.getOldBlock();
             if (fetchMap != null) {
                 int instruction = fetchMap.get("instruction");
+
                 System.out.println("decoding 1: " + instruction);
+                if((instruction >>28) == -4 ){
+                    return;
+                }
+
                 decoder.decode(instruction);
                 HashMap<String, Integer> map = new HashMap<>();
 
@@ -152,11 +157,30 @@ public class CPU {
         HashMap<String, Integer> map = decode1_decode2.getOldBlock();
         if (map != null) {
             System.out.println("decoding 2: " + map.get("instruction"));
+            int instruction = map.get("instruction");
+            if((instruction >>28) == -4 ){
+                return;
+            }
+
             registerFile.setReadReg1(map.get("r2"));
             registerFile.setReadReg2(map.get("r3"));
             registerFile.setWriteReg(map.get("r1"));
             registerFile.setRegWrite(map.get("regWrite") == 1);
 
+
+            if((map.get("instruction") >> 28) ==  4){
+                System.out.println("Helloo");
+                System.out.println(map.get("r1"));
+                System.out.println(map.get("r2"));
+                registerFile.setReadReg1(map.get("r1"));
+                registerFile.setReadReg2(map.get("r2"));
+
+                System.out.println(registerFile.getReadReg1());
+                System.out.println(registerFile.getReadReg2());
+
+                System.out.println(registerFile.getData1());
+                System.out.println(registerFile.getData2());
+            }
 
 
             HashMap<String, Integer> decode2Map = new HashMap<>();
@@ -193,6 +217,10 @@ public class CPU {
         if (map != null) {
 
             int instruction = map.get("instruction");
+            if((instruction >>28) == -4 ){
+                return;
+            }
+
             System.out.println("execute: "+ instruction);
 
             alu.setControl(map.get("ALUOp"));
@@ -212,6 +240,9 @@ public class CPU {
             }else{
                 alu.setOp2(map.get("readData2"));
             }
+
+            System.out.println("Operand 1 "+ alu.getOp1());
+            System.out.println("Operand 2 "+ alu.getOp2());
 
             HashMap<String, Integer> execute1Map = new HashMap<>();
 
@@ -238,28 +269,26 @@ public class CPU {
         HashMap<String, Integer> map = execute1_execute2.getOldBlock();
         if(map != null){
             System.out.println("execute2: "+ map.get("instruction"));
-
-
-            //branch
-            System.out.println("Not Zero: "+ map.get("not_zero"));
             int instruction = map.get("instruction");
+            if((instruction >>28) == -4 ){ //NOP
+                return;
+            }
             int opcode = instruction >> 28;
-//            if(map.get("branch") == 1 && map.get("not_zero") == 1){
-            if(map.get("branch") == 1){
-                System.out.println("Immediate " + map.get("imm"));
-                this.pc = map.get("pc") + map.get("imm");
+            //branch
 
+            if(map.get("branch") == 1 && map.get("not_zero") == 1){
+//            if(map.get("branch") == 1){
+                System.out.println("Immediate " + map.get("imm"));
+                System.out.println("Pc " + map.get("pc"));
+                this.pc = map.get("pc") + 1 + map.get("imm");
+                System.out.println("Pc " + this.pc);
                 System.out.println("Branching to "+this.pc);
-                this.fetch_decode1.flush();
-                this.decode1_decode2.flush();
-                this.decode2_execute1.flush();
+                flushPipelines();
             }else if(opcode == 0b0111){ //jump
                 this.pc = ((map.get("pc")) & 0b11110000000000000000000000000000) | map.get("address");
                 // TODO: change this to handle pc - 1
                 System.out.println("Jumping to "+this.pc + " by  "+ map.get("instruction"));
-                this.fetch_decode1.flush();
-                this.decode1_decode2.flush();
-                this.decode2_execute1.flush();
+                flushPipelines();
             }
 
 
@@ -293,6 +322,12 @@ public class CPU {
         HashMap<String, Integer> map = execute2_memory.getOldBlock();
         if(map != null){
             System.out.println("memory: "+ map.get("instruction"));
+
+            int instruction = map.get("instruction");
+            if((instruction >>28) == -4 ){ // NOP
+                return;
+            }
+
             memory.setMemWrite(map.get("memWrite") == 1);
             memory.setMemRead(map.get("memRead") == 1);
             memory.setAddress(map.get("aluResult"));
@@ -315,6 +350,12 @@ public class CPU {
         HashMap<String, Integer> map = memory_writeBack.getOldBlock();
         if(map != null){
             System.out.println("writeBack: "+ map.get("instruction"));
+
+            int instruction = map.get("instruction");
+            if((instruction >>28) == -4 ){ // NOP
+                return;
+            }
+
             registerFile.setRegWrite(map.get("regWrite") == 1);
             registerFile.setWriteReg(map.get("r1"));
             if(map.get("memToReg") == 1){
@@ -352,6 +393,13 @@ public class CPU {
         execute1_execute2.propagate();
         execute2_memory.propagate();
         memory_writeBack.propagate();
+    }
+
+    public void flushPipelines(){
+        System.out.println("Flushing pipelines");
+        this.fetch_decode1.flush();
+        this.decode1_decode2.flush();
+        this.decode2_execute1.flush();
     }
 
     public boolean gameOver(){

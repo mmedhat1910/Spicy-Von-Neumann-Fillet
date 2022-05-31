@@ -20,6 +20,9 @@ public class Parser {
         if(instruction[0].equals("J")){
             instructionValue = 0b01110000000000000000000000000000;
             return instructionValue | Integer.parseInt(instruction[1]);
+        }else if(instruction[0].equals("NOP")){
+            instructionValue = 0b11000000000000000000000000000000;
+            return instructionValue;
         }
 
 
@@ -37,7 +40,6 @@ public class Parser {
             case "ORI" -> 0b0110;
             case "LW" -> 0b1010;
             case "SW" -> 0b1011;
-            case "NOP" -> 0b1100;
             default -> instructionValue;
         };
         //shift opcode

@@ -35,6 +35,13 @@ public class RegisterFile {
         }
     }
 
+    public int getReadReg1() {
+        return readReg1;
+    }
+
+    public int getReadReg2() {
+        return readReg2;
+    }
 
     public String toString(){
         return "Registers: "+ Arrays.toString(registers);

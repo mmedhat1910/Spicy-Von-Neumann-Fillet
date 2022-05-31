@@ -1,6 +1,7 @@
 package Tests;
 
 import Components.ALU;
+import Controllers.ControlUnit;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -52,6 +53,19 @@ public class ALUTest {
         assertEquals(2, alu.getResult());
         assertFalse(alu.getZero());
 
+
+    }
+
+    @Test
+    public void testZeroFlag(){
+        ControlUnit control = new ControlUnit();
+        control.run(0b0100);
+        ALU alu = new ALU();
+        alu.setOp1(4);
+        alu.setOp2(5);
+        alu.setControl(control.getALUOp());
+//        alu.getResult();
+        assertFalse(alu.getZero());
 
     }
 }

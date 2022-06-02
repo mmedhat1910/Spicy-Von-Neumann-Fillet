@@ -31,7 +31,14 @@ public class CPU {
 
 
 
-    boolean done = true;
+    boolean done = false;
+    boolean isDoneFetch = false;
+    boolean isDoneDecode1 = false;
+    boolean isDoneDecode2 = false;
+    boolean isDoneExec1 = false;
+    boolean isDoneExec2 = false;
+    boolean isDoneMem = false;
+
 
     public CPU() throws IOException {
         this.memory = new MainMemory();
@@ -51,17 +58,21 @@ public class CPU {
 
         // saving instructions to instruction memory
         memory.setMemWrite(true);
-        for (int index = 0; index < instructions.size();index++) {
+        int index;
+        for (index = 0; index < instructions.size();index++) {
             int instruction = instructions.get(index);
             memory.setAddress(index);
             memory.writeData(instruction);
             instructionCount++;
         }
+//        System.out.println("Index "+ index);
+        memory.setAddress(index);
+        memory.writeData(-1);
         memory.setMemWrite(false);
 //        int cycle = 1;
 
         int cycle = 1;
-        while(cycle < 50) { //TODO: change this
+        while(!done) { //TODO: change this
             System.out.println("Cycle: "+cycle);
             System.out.println("--------------------------------------");
 
@@ -86,45 +97,62 @@ public class CPU {
             System.out.println("--------------------------------------");
 
         }
+            System.out.println("Terminating... ");
             System.out.println(registerFile);
-            memory.display(1490, 1510);
-            System.out.println("********** CHANGE WHILE LOOP ********** ");
+            memory.display(0, 20);
+//            System.out.println("********** CHANGE WHILE LOOP ********** ");
     }
 
 
 
     public void fetch() {
+
+        if(isDoneFetch) return;
+
         memory.setAddress(pc-1);
         int instruction = memory.getInstruction();
         //TODO REMOVE
-        if(instruction == 0){
-            System.out.println("HALT");
-            return;
-        }
+
         System.out.println("fetch: "+ instruction);
         HashMap<String, Integer> instructionMap = new HashMap<>();
         instructionMap.put("instruction", instruction);
         instructionMap.put("pc", pc);
         fetch_decode1.setNewBlock(instructionMap);
-        pc++;
         if(instruction == -1){
-            // TODO when instruction end
+            System.out.println("Fetching HALT");
+            isDoneFetch = true;
+            return;
         }
+        pc++;
+
     }
 
     public void decode1(){
+
+        if(isDoneDecode1) return;
+
         HashMap<String, Integer> fetchMap = fetch_decode1.getOldBlock();
+
             if (fetchMap != null) {
                 int instruction = fetchMap.get("instruction");
 
                 System.out.println("decoding 1: " + instruction);
+
+                HashMap<String, Integer> map = new HashMap<>();
+
+                if(instruction == -1){
+                    System.out.println("Decode 1 HALT");
+                    isDoneDecode1 = true;
+                    map.put("instruction", instruction);
+                    map.put("pc", fetchMap.get("pc"));
+                    decode1_decode2.setNewBlock(map);
+                    return;
+                }
                 if((instruction >>28) == -4 ){
                     return;
                 }
 
                 decoder.decode(instruction);
-                HashMap<String, Integer> map = new HashMap<>();
-
                 // control
                 controlUnit.run(decoder.getOpcode());
 
@@ -154,10 +182,26 @@ public class CPU {
         }
 
     public void decode2(){
+
+        if(isDoneDecode2) return;
+
+
         HashMap<String, Integer> map = decode1_decode2.getOldBlock();
         if (map != null) {
             System.out.println("decoding 2: " + map.get("instruction"));
             int instruction = map.get("instruction");
+
+            HashMap<String, Integer> decode2Map = new HashMap<>();
+
+            if(instruction == -1){
+                System.out.println("Decode 2 HALT");
+                isDoneDecode2 = true;
+                decode2Map.put("instruction", map.get("instruction"));
+                decode2Map.put("pc", map.get("pc"));
+                decode2_execute1.setNewBlock(decode2Map);
+                return;
+            }
+
             if((instruction >>28) == -4 ){
                 return;
             }
@@ -168,22 +212,22 @@ public class CPU {
             registerFile.setRegWrite(map.get("regWrite") == 1);
 
 
-            if((map.get("instruction") >> 28) ==  4){
-                System.out.println("Helloo");
-                System.out.println(map.get("r1"));
-                System.out.println(map.get("r2"));
-                registerFile.setReadReg1(map.get("r1"));
-                registerFile.setReadReg2(map.get("r2"));
+//            if((map.get("instruction") >> 28) ==  4){
+//                System.out.println("Helloo");
+//                System.out.println(map.get("r1"));
+//                System.out.println(map.get("r2"));
+//                registerFile.setReadReg1(map.get("r1"));
+//                registerFile.setReadReg2(map.get("r2"));
+//
+//                System.out.println(registerFile.getReadReg1());
+//                System.out.println(registerFile.getReadReg2());
+//
+//                System.out.println(registerFile.getData1());
+//                System.out.println(registerFile.getData2());
+//            }
 
-                System.out.println(registerFile.getReadReg1());
-                System.out.println(registerFile.getReadReg2());
-
-                System.out.println(registerFile.getData1());
-                System.out.println(registerFile.getData2());
-            }
 
 
-            HashMap<String, Integer> decode2Map = new HashMap<>();
 
             decode2Map.put("memRead", map.get("memRead"));
             decode2Map.put("memWrite", map.get("memWrite"));
@@ -213,10 +257,28 @@ public class CPU {
     }
 
     public void execute1(){
+
+        if(isDoneExec1) return;
+
+
         HashMap<String, Integer> map = decode2_execute1.getOldBlock();
         if (map != null) {
 
             int instruction = map.get("instruction");
+
+            HashMap<String, Integer> execute1Map = new HashMap<>();
+
+
+            if(instruction == -1){
+                System.out.println("Execute 1 HALT");
+                isDoneExec1 = true;
+                execute1Map.put("instruction", instruction);
+                execute1Map.put("pc", map.get("pc"));
+                execute1_execute2.setNewBlock(execute1Map);
+
+                return;
+            }
+
             if((instruction >>28) == -4 ){
                 return;
             }
@@ -241,10 +303,7 @@ public class CPU {
                 alu.setOp2(map.get("readData2"));
             }
 
-            System.out.println("Operand 1 "+ alu.getOp1());
-            System.out.println("Operand 2 "+ alu.getOp2());
 
-            HashMap<String, Integer> execute1Map = new HashMap<>();
 
             execute1Map.put("memRead", map.get("memRead"));
             execute1Map.put("memWrite", map.get("memWrite"));
@@ -262,14 +321,31 @@ public class CPU {
             execute1Map.put("not_zero", alu.getZero() ? 0 : 1); // if not zero then 1 else 0
             execute1Map.put("readDataR1", map.get("readDataR1"));
             execute1_execute2.setNewBlock(execute1Map);
+
+
         }
     }
 
     public void execute2() {
+
+        if(isDoneExec2) return;
+
+
         HashMap<String, Integer> map = execute1_execute2.getOldBlock();
         if(map != null){
             System.out.println("execute2: "+ map.get("instruction"));
             int instruction = map.get("instruction");
+            HashMap<String, Integer> execute2Map = new HashMap<>();
+
+            if(instruction == -1){
+                System.out.println("Execute 2 HALT");
+                isDoneExec2 = true;
+                execute2Map.put("pc", map.get("pc"));
+                execute2Map.put("instruction", map.get("instruction"));
+                execute2_memory.setNewBlock(execute2Map);
+                return;
+            }
+
             if((instruction >>28) == -4 ){ //NOP
                 return;
             }
@@ -295,7 +371,6 @@ public class CPU {
 
 
 
-            HashMap<String, Integer> execute2Map = new HashMap<>();
             execute2Map.put("memRead", map.get("memRead"));
             execute2Map.put("memWrite", map.get("memWrite"));
             execute2Map.put("memToReg", map.get("memToReg"));
@@ -312,6 +387,7 @@ public class CPU {
             execute2_memory.setNewBlock(execute2Map);
 
 
+
         }
 
 
@@ -319,11 +395,26 @@ public class CPU {
     }
 
     public void memoryOp(){
+
+        if(isDoneMem) return;
+
+
         HashMap<String, Integer> map = execute2_memory.getOldBlock();
         if(map != null){
             System.out.println("memory: "+ map.get("instruction"));
 
             int instruction = map.get("instruction");
+            HashMap<String, Integer> memoryMap = new HashMap<>();
+
+            if(instruction == -1){
+                System.out.println("Memory HALT");
+                isDoneMem = true;
+                memoryMap.put("pc", map.get("pc"));
+                memoryMap.put("instruction", map.get("instruction"));
+                memory_writeBack.setNewBlock(memoryMap);
+                return;
+            }
+
             if((instruction >>28) == -4 ){ // NOP
                 return;
             }
@@ -333,7 +424,6 @@ public class CPU {
             memory.setAddress(map.get("aluResult"));
             memory.writeData(map.get("readDataR1")); // SW R1 R2 IMM -> MEM[R2+IMM] = R1
 
-            HashMap<String, Integer> memoryMap = new HashMap<>();
 
             memoryMap.put("r1", map.get("r1"));
             memoryMap.put("regWrite", map.get("regWrite"));
@@ -343,6 +433,9 @@ public class CPU {
             memoryMap.put("pc", map.get("pc"));
             memoryMap.put("instruction", map.get("instruction"));
             memory_writeBack.setNewBlock(memoryMap);
+
+
+
         }
     }
 
@@ -352,6 +445,13 @@ public class CPU {
             System.out.println("writeBack: "+ map.get("instruction"));
 
             int instruction = map.get("instruction");
+
+            if(instruction == -1){
+                System.out.println("Write Back HALT");
+                done = true;
+                return;
+            }
+
             if((instruction >>28) == -4 ){ // NOP
                 return;
             }
@@ -363,6 +463,7 @@ public class CPU {
             }else{
                 registerFile.writeData(map.get("aluResult"));
             }
+
 
 
         }

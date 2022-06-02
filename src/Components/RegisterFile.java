@@ -29,6 +29,7 @@ public class RegisterFile {
 
     public void writeData(int data) {
         if (regWrite) {
+            System.out.println("Register R"+writeReg+" changed to "+ data);
             this.registers[writeReg] = data;
         } else {
             System.out.println("Error writing in register");

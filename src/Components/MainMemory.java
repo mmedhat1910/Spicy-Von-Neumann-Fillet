@@ -59,7 +59,7 @@ public class MainMemory{
 
     }
     public void display(int address1, int address2){
-        System.out.print("[");
+        System.out.print("Memory: [");
         for(int i=address1;i<=address2;i++){
             System.out.print(memory[i]+", ");
         }

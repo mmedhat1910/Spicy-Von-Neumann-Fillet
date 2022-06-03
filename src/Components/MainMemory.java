@@ -1,12 +1,24 @@
 package Components;
 
 
+import java.util.Arrays;
+
 public class MainMemory{
     private int[] memory= new int[2048];
     private boolean MemRead; //Boolean flag coming from Control Unit
     private boolean MemWrite; //Boolean flag coming from Control Unit
     private int address;
 
+
+    public void display(){
+        System.out.println("Full Memory");
+        for(int i=0;i<memory.length;i++){
+            System.out.println("Address: "+i+" Value: "+memory[i]);
+        }
+    }
+    public String toString(){
+        return "Full Memory: " +Arrays.toString(memory);
+    }
 
     public int getAddress() {
         return address;
@@ -29,7 +41,7 @@ public class MainMemory{
             if (MemRead && address >1023)
                 return memory[address];
             else {
-                System.out.println("Wrong address assigned");
+                System.out.println("Cannot read data from instruction memory");
                 return -1;
             }
     }
@@ -37,10 +49,10 @@ public class MainMemory{
     public void writeData(int inputValue) {
         if(MemWrite && address > 1023) {
             memory[address] = inputValue;
-            System.out.println("Writing to data memory");
+            System.out.println("Writing "+inputValue+" to data memory at address "+address);
         }else if (MemWrite && address <= 1023) {
             memory[address] = inputValue;
-            System.out.println("Writing to instruction memory");
+            System.out.println("Writing " + inputValue+ " to instruction memory");
         }else {
             System.out.println("Cannot write to memory");
         }

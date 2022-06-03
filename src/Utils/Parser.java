@@ -1,5 +1,7 @@
 package Utils;
 
+import Components.Decoder;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -60,7 +62,8 @@ public class Parser {
             return instructionValue | r3;
         }
         //shamt or imm
-        return instructionValue | Integer.parseInt(instruction[3]);
+        int imm = Integer.parseInt(instruction[3]) & 0b00000000000000111111111111111111;
+        return instructionValue | imm;
 
         }
 
@@ -88,6 +91,47 @@ public class Parser {
         return codeText;
     }
 
+
+
+    public String reverseParse(int instruction) {
+        Decoder decoder = new Decoder();
+        decoder.decode(instruction);
+        int opcode = decoder.getOpcode();
+
+        String op = switch (opcode) {
+            case 0b0000 -> "ADD";
+            case 0b0001 -> "SUB";
+            case 0b0010 -> "MULI";
+            case 0b0011 -> "ADDI";
+            case 0b0100 -> "BNE";
+            case 0b0101 -> "ANDI";
+            case 0b0110 -> "ORI";
+            case 0b0111 -> "J";
+            case -8 -> "SLL";
+            case -7 -> "SRL";
+            case -6 -> "LW";
+            case -5 -> "SW";
+            default -> "NOP";
+        };
+
+        String r1 = "R" + decoder.getR1();
+        String r2 = "R" + decoder.getR2();
+        String r3 = "R" + decoder.getR3();
+        String imm = decoder.getImm() + "";
+        String shamt = decoder.getShamt() + "";
+        String address = decoder.getAddress() + "";
+
+//        int[] R_inst_arr = new int[]{0,1-8,-7};
+//        ArrayList<Integer> R_inst = Arrays.asList(R_inst_arr);
+        if(opcode  == 0|| opcode == 1 || opcode == -8 || opcode == -7)
+            return op + " " + r1 + " " + r2 + " " + r3;
+        else if (opcode == 7)
+            return op + " " + address;
+        else if(op.equals("NOP")) return "NOP";
+        else
+            return op + " " + r1 + " " + r2 + " " + imm;
+
+    }
     public static void main(String[] args) throws IOException {
         Parser p = new Parser("code.txt");
         System.out.println(p.getCodeText());
@@ -96,31 +140,9 @@ public class Parser {
             System.out.println( Integer.toBinaryString(p.parseInstruction(inst)));
         }
         //TODO test all instructions parsing
-
+        System.out.println(p.parseInstruction("ADDI R1 R2 -5"));
+        System.out.println(p.reverseParse(p.parseInstruction("ADD R1 R2 R3")));
 
     }
 
-    public String reverseParse(int instruction){
-        String[] instructionArray = new String[4];
-        instructionArray[0] = "NOP";
-        instructionArray[1] = "NOP";
-        instructionArray[2] = "NOP";
-        instructionArray[3] = "NOP";
-        int opcode = instruction >> 28;
-        int r1 = (instruction >> 23) & 0b11111;
-        int r2 = (instruction >> 18) & 0b11111;
-        int r3 = (instruction >> 13) & 0b11111;
-        int shamt = (instruction >> 13) & 0b11111;
-        int imm = instruction;
-        switch (opcode){
-            case 0b0111 -> instructionArray[0] = "J " + Integer.toString(imm);
-            case 0b0001 -> instructionArray[0] = "SUB R" + Integer.toString(r1) + ", R" + Integer.toString(r2) + ", R" + Integer.toString(r3);
-            case 0b1000 -> instructionArray[0] = "SLL R" + Integer.toString(r1) + ", R" + Integer.toString(r2) + ", " + Integer.toString(shamt);
-            case 0b1001 -> instructionArray[0] = "SRL R" + Integer.toString(r1) + ", R" + Integer.toString(r2) + ", " + Integer.toString(shamt);
-            case 0b0010 -> instructionArray[0] = "MULI R" + Integer.toString(r1) + ", R" + Integer.toString(r2) + ", " + Integer.toString(imm);
-            case 0b0011 -> instructionArray[0] = "ADDI R" + Integer.toString(r1) + ", R" + Integer.toString(r2) + ", " + Integer.toString(imm);
-            case 0b0100 -> instructionArray[0] = "BNE R" + Integer.toString(r1) + ", R" + Integer.toString(r2) + ", " + Integer.toString(imm);
-    }
-        return Arrays.toString(instructionArray);
-    }
 }

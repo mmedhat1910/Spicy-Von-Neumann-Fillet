@@ -49,6 +49,7 @@ public class CPU {
         this.pc = 1;
     }
 
+
     public void run(String filename) throws IOException {
 
         this.parser = new Parser(filename);
@@ -99,6 +100,7 @@ public class CPU {
         }
             System.out.println("Terminating... ");
             System.out.println(registerFile);
+            memory.display();
             memory.display(0, 20);
 //            System.out.println("********** CHANGE WHILE LOOP ********** ");
     }
@@ -113,7 +115,7 @@ public class CPU {
         int instruction = memory.getInstruction();
         //TODO REMOVE
 
-        System.out.println("fetch: "+ instruction);
+        System.out.println("fetch: "+ instruction + " ("+parser.reverseParse(instruction)+")");
         HashMap<String, Integer> instructionMap = new HashMap<>();
         instructionMap.put("instruction", instruction);
         instructionMap.put("pc", pc);
@@ -136,7 +138,7 @@ public class CPU {
             if (fetchMap != null) {
                 int instruction = fetchMap.get("instruction");
 
-                System.out.println("decoding 1: " + instruction);
+                System.out.println("decoding 1: " + instruction+ " ("+parser.reverseParse(instruction)+")");
 
                 HashMap<String, Integer> map = new HashMap<>();
 
@@ -172,6 +174,7 @@ public class CPU {
                 map.put("r2", decoder.getR2());
                 map.put("r3", decoder.getR3());
                 map.put("imm", decoder.getImm());
+//                System.out.println("Immediate map: "+decoder.getImm());
                 map.put("shamt", decoder.getShamt());
                 map.put("address", decoder.getAddress());
                 map.put("instruction", instruction);
@@ -188,8 +191,8 @@ public class CPU {
 
         HashMap<String, Integer> map = decode1_decode2.getOldBlock();
         if (map != null) {
-            System.out.println("decoding 2: " + map.get("instruction"));
             int instruction = map.get("instruction");
+            System.out.println("decoding 2: " + map.get("instruction")+ " ("+parser.reverseParse(instruction)+")");
 
             HashMap<String, Integer> decode2Map = new HashMap<>();
 
@@ -212,19 +215,20 @@ public class CPU {
             registerFile.setRegWrite(map.get("regWrite") == 1);
 
 
-//            if((map.get("instruction") >> 28) ==  4){
-//                System.out.println("Helloo");
-//                System.out.println(map.get("r1"));
-//                System.out.println(map.get("r2"));
-//                registerFile.setReadReg1(map.get("r1"));
-//                registerFile.setReadReg2(map.get("r2"));
-//
-//                System.out.println(registerFile.getReadReg1());
-//                System.out.println(registerFile.getReadReg2());
-//
-//                System.out.println(registerFile.getData1());
-//                System.out.println(registerFile.getData2());
-//            }
+            if((map.get("instruction") >> 28) ==  4){
+                System.out.println("Helloo");
+                System.out.println(map.get("r1"));
+                System.out.println(map.get("r2"));
+                registerFile.setReadReg1(map.get("r1"));
+                registerFile.setReadReg2(map.get("r2"));
+
+                System.out.println(registerFile.getReadReg1());
+                System.out.println(registerFile.getReadReg2());
+
+                System.out.println(registerFile.getData1());
+                System.out.println(registerFile.getData2());
+                System.out.println(registerFile.getData1() == registerFile.getData2());
+            }
 
 
 
@@ -283,7 +287,7 @@ public class CPU {
                 return;
             }
 
-            System.out.println("execute: "+ instruction);
+            System.out.println("execute: "+ instruction+ " ("+parser.reverseParse(instruction)+")");
 
             alu.setControl(map.get("ALUOp"));
             alu.setOp1(map.get("readData1"));
@@ -333,8 +337,8 @@ public class CPU {
 
         HashMap<String, Integer> map = execute1_execute2.getOldBlock();
         if(map != null){
-            System.out.println("execute2: "+ map.get("instruction"));
             int instruction = map.get("instruction");
+            System.out.println("execute2: "+ map.get("instruction") + " ("+parser.reverseParse(instruction)+")");
             HashMap<String, Integer> execute2Map = new HashMap<>();
 
             if(instruction == -1){
@@ -401,9 +405,9 @@ public class CPU {
 
         HashMap<String, Integer> map = execute2_memory.getOldBlock();
         if(map != null){
-            System.out.println("memory: "+ map.get("instruction"));
-
             int instruction = map.get("instruction");
+            System.out.println("memory: "+ map.get("instruction")+ " ("+parser.reverseParse(instruction)+")");
+
             HashMap<String, Integer> memoryMap = new HashMap<>();
 
             if(instruction == -1){
@@ -442,9 +446,9 @@ public class CPU {
     public void writeBack(){
         HashMap<String, Integer> map = memory_writeBack.getOldBlock();
         if(map != null){
-            System.out.println("writeBack: "+ map.get("instruction"));
-
             int instruction = map.get("instruction");
+            System.out.println("writeBack: "+ map.get("instruction")+ " ("+parser.reverseParse(instruction)+")");
+
 
             if(instruction == -1){
                 System.out.println("Write Back HALT");

@@ -15,14 +15,36 @@ public class Decoder {
     public  void decode(int instruction) {
         // Complete the decode() body...
         opcode = (instruction >> 28);
+        // todo: sign extend
+
+
+
         r1 = (instruction >> 23) & 0b000011111;
-//        r1 = instruction  & 0b00001111100000000000000000000000;
+//        if((instruction << 4) < 0){
+//            r1 = r1 | 0b111100000;
+//        }
+
         r2 = (instruction >> 18) & 0b00000000011111;
+//        if((instruction << 9)<0){
+//            r2 = r2 | 0b11111111100000;
+//        }
+//        r1 = instruction  & 0b00001111100000000000000000000000;
 //        r2 =  instruction  & 0b00000000011111000000000000000000;
         r3 = (instruction >> 13) & 0b0000000000000011111;
+//        if((instruction << 14) < 0){
+//            r3 = r3 | 0b1111111111111100000;
+//        }
+
 //        r3 =instruction  & 0b00000000000000111110000000000000;
         shamt = instruction &  0b00000000000000000001111111111111;
+//        imm = instruction & 0b00000000000000111111111111111111;
+
+        int immediate = instruction << 14;
         imm = instruction & 0b00000000000000111111111111111111;
+        if (immediate < 0){
+            imm = imm  | 0b11111111111111110000000000000000;
+        }
+
         address = instruction & 0b00001111111111111111111111111111;
 
     }

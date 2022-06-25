@@ -20,7 +20,7 @@ This is a java simulation of a mini processor following the Von Neumann architec
 
 ### 1.3 Registers: 33
 
-- Size: $32$ bits
+- Size: 32 bits
 - 31 General-Purpose Registers (GPRS)
   - Names: R1 to R31
 - 1 Zero Register
@@ -30,8 +30,8 @@ This is a java simulation of a mini processor following the Von Neumann architec
   - Name: PC
 
 ### 2 Instruction Set Architecture (ISA)
-- Instruction Size: $32$ bits
-- Instruction Types: $3$
+- Instruction Size: 32 bits
+- Instruction Types: 3
   - R - Type
   - I - Type
   - J - Type
@@ -39,11 +39,11 @@ This is a java simulation of a mini processor following the Von Neumann architec
 
   |  Name | Mnemonic  | Type  | Format  |  Operation |    
   |---|---|---|---|---|
-  |Add |ADD |R| ADD R1 R2 R3 |$R1 = R2 + R3$|
-  |Subtract| SUB| R| SUB R1 R2 R3|$ R1 = R2 - R3$|
-  |Multiply Immediate| MULI |I|MULI R1 R2 IMM| $R1 = R2 * IMM$|
+  |Add |ADD |R| ADD R1 R2 R3 |R1 = R2 + R3|
+  |Subtract| SUB| R| SUB R1 R2 R3| R1 = R2 - R3|
+  |Multiply Immediate| MULI |I|MULI R1 R2 IMM| R1 = R2 * IMM|
   |Add Immediate| ADDI |I| ADDI R1 R2 IMM| R1 = R2 + IMM|
-  |Branch if Not Equal |BNE |I| BNE R1 R2 IMM| $IF(R1 != R2)$ {$PC = PC+1+IMM $}|
+  |Branch if Not Equal |BNE |I| BNE R1 R2 IMM| IF(R1 != R2) {PC = PC+1+IMM }|
   |And Immediate| ANDI| I| ANDI R1 R2 IMM |R1 = R2 & IMM|
   |Or Immediate| ORI |I| ORI R1 R2 IMM| R1 = R2 \| IMM|
   |Jump |J |J| J ADDRESS |\*PC = PC[31:28] \|\| ADDRESS|

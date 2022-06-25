@@ -9,14 +9,17 @@ This is a java simulation of a mini processor following the Von Neumann architec
 - Von Neumann Architecture is a digital computer architecture whose design is based on the
     concept of stored program computers where program data and instruction data are stored
     in the same memory.
-    
-### 1.2 Memory Size: $(32 * 2048)$
-- The main memory addresses are from $0$ to $2$<sup>$11$</sup>$ − 1$  ($0$ to $2047$).
-- Each memory block (row) contains $1$ word which is $32$ bits ($4$ bytes).
+
+### 1.2 Memory Size: 32 * 2048
+
+- The main memory addresses are from 0 to 2<sup>11</sup> − 1  (0 to 2047).
+- Each memory block (row) contains 1 word which is 32 bits (4 bytes).
 - The main memory is word addressable.
-- Addresses from $0$ to $1023$ contain the program instructions.
- -Addresses from $1024$ to $2048$ contain the data.
-### 1.3 Registers: $33$
+- Addresses from 0 to 1023 contain the program instructions.
+- Addresses from 1024 to 2048 contain the data.
+
+### 1.3 Registers: 33
+
 - Size: $32$ bits
 - 31 General-Purpose Registers (GPRS)
   - Names: R1 to R31

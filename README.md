@@ -35,6 +35,70 @@ This is a java simulation of a mini processor following the Von Neumann architec
   - R - Type
   - I - Type
   - J - Type
+
+<table>
+    <thead>
+        <tr>
+            <th colspan=5>R - Type</th>            
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>OPCODE</td>
+            <td>R1</td>
+            <td>R2</td>
+            <td>R3</td>
+            <td>SHAMT</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>5</td>
+            <td>5</td>
+            <td>5</td>
+            <td>13</td>
+        </tr>
+    </tbody>
+</table>
+<table>
+    <thead>
+        <tr>
+            <th colspan=4>I - Type</th>            
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>OPCODE</td>
+            <td>R1</td>
+            <td>R2</td>
+            <td>IMMEDIATE</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>5</td>
+            <td>5</td>
+            <td>18</td>
+        </tr>
+    </tbody>
+</table>
+<table>
+    <thead>
+        <tr>
+            <th colspan=2>J - Type</th>            
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>OPCODE</td>
+            <td>ADDRESS</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>28</td>
+        </tr>
+    </tbody>
+</table>
+
+
 - Instructions
 
   |  Name | Mnemonic  | Type  | Format  |  Operation |    

@@ -1,9 +1,18 @@
 # Spicy-Von-Neumann-Fillet
 
-This is a java simulation of a mini processor following the Von Neumann architecture.
+### A java simulation of a mini processor following the Von Neumann architecture.
 
 >Computer System & Architecture Course Project @ GUC
 
+## Tools Used
+|Tool | Description|
+|---|---|
+| Java | Programing Language|
+| JUnit4 | Testing Suite|
+|IntelliJ | IDE for Development|
+|Git & Github | Version Control|
+
+# Documentation
 ## 1. Memory Architecture
 ### 1.1 Architecture : `Von Neumann`
 - Von Neumann Architecture is a digital computer architecture whose design is based on the

@@ -12,6 +12,13 @@
 |IntelliJ | IDE for Development|
 |Git & Github | Version Control|
 
+## Contributors
+- [Mohamed Medhat](https://github.com/mmedhat1910)
+- [Hazem Sameh](https://github.com/hazemsoliman9)
+- [Hana Pasha](https://github.com/hanapasha)
+- [Yahya Essam](https://github.com/yahyae07)
+- [Mahmoud Moamen](https://github.com/MahmoudMoamen)
+
 # Documentation
 ## 1. Memory Architecture
 ### 1.1 Architecture : `Von Neumann`
